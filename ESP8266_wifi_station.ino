@@ -6,8 +6,8 @@
 #include <ESP8266WiFi.h>
 
 // Replace these with your WiFi network settings
-const char* ssid = "MatarawaX2000"; //replace this with your WiFi network name
-const char* password = "LX2k-557"; //replace this with your WiFi network password
+const char* ssid = "yourssid"; //replace this with your WiFi network name
+const char* password = "yourpassword"; //replace this with your WiFi network password
 
 void setup()
 {
