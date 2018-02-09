@@ -1,0 +1,273 @@
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include <SPI.h>
+#include <Ethernet.h>
+#include <LiquidCrystal.h>
+
+// Data wire is plugged into port 2 on the Arduino
+#define ONE_WIRE_BUS 8
+
+LiquidCrystal lcd(9, 7, 6, 5, 4, 3, 2);
+
+// Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
+OneWire oneWire(ONE_WIRE_BUS);
+// Pass our oneWire reference to Dallas Temperature. 
+DallasTemperature sensors(&oneWire);
+// arrays to hold device addresses
+DeviceAddress insideThermometer, outsideThermometer;
+
+
+
+byte mac[] = {  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+IPAddress ip(192,168,1,243);
+IPAddress gateway(192, 168, 1, 1);
+IPAddress subnet(255, 255, 255, 0);
+IPAddress server(0, 0, 0, 0); //Put here you IP Server
+EthernetClient client;
+
+float tempC ;
+float tempC0 ;
+float tempC1 ;
+char tempBuffer1[8];
+char tempBuffer2[8];
+int ledPin = 9; 
+float oldTemp0;
+float oldTemp1;
+
+void setup()
+{
+  Serial.begin(9600);
+  lcd.begin(16, 2);
+  lcd.print("Initializing....");
+  Serial.println("GRobotronics Serial Monitor - Temperature Sensors Check");
+  Ethernet.begin(mac, ip, gateway, gateway, subnet);
+  Serial.println("Initializing...");
+  Serial.println();
+  delay(5000);
+  sensors.begin();
+  
+  // locate devices on the bus
+  Serial.print("Found ");
+  Serial.print(sensors.getDeviceCount(), DEC);
+  Serial.println(" devices.");
+
+  // search for devices on the bus and assign based on an index.
+  if (!sensors.getAddress(insideThermometer, 0)) Serial.println("Unable to find address for Device 0"); 
+  if (!sensors.getAddress(outsideThermometer, 1)) Serial.println("Unable to find address for Device 1"); 
+
+  // show the addresses we found on the bus
+  Serial.print("Device 0 Address: ");
+  printAddress(insideThermometer);
+  Serial.println();
+
+  Serial.print("Device 0 Alarms: ");
+  printAlarms(insideThermometer);
+  Serial.println();
+  
+  Serial.print("Device 1 Address: ");
+  printAddress(outsideThermometer);
+  Serial.println();
+
+  Serial.print("Device 1 Alarms: ");
+  printAlarms(outsideThermometer);
+  Serial.println();
+  
+  Serial.println("Setting alarm temps...");
+
+  // alarm when temp is higher than 30C
+  sensors.setHighAlarmTemp(insideThermometer, 25);
+  
+  // alarm when temp is lower than -10C
+  sensors.setLowAlarmTemp(insideThermometer, 18);
+  
+  // alarm when temp is higher than 31C
+  sensors.setHighAlarmTemp(outsideThermometer, 30);
+  
+  // alarn when temp is lower than 27C
+  sensors.setLowAlarmTemp(outsideThermometer, 4);
+  
+  Serial.print("Set Inside Alarm : ");
+  printAlarms(insideThermometer);
+  Serial.println();
+  
+  Serial.print("Set Outside Alarm: ");
+  printAlarms(outsideThermometer);
+  Serial.println();
+  
+
+  
+  pinMode(ledPin, OUTPUT);
+  
+}
+char pageAdd[32];
+
+// function to print a device address
+void printAddress(DeviceAddress deviceAddress)
+{
+  for (uint8_t i = 0; i < 8; i++)
+  {
+    if (deviceAddress[i] < 16) Serial.print("0");
+    Serial.print(deviceAddress[i], HEX);
+  }
+}
+
+// function to print the temperature for a device
+void printTemperature(DeviceAddress deviceAddress)
+{
+  float tempC = sensors.getTempC(deviceAddress);
+  float tempC0 = sensors.getTempC(insideThermometer);
+  float tempC1 = sensors.getTempC(outsideThermometer);
+  dtostrf(tempC0,3,1,tempBuffer1);
+  dtostrf(tempC1,3,1,tempBuffer2);
+  Serial.print("Temp C: ");
+  Serial.println(tempC);
+}
+
+void printAlarms(uint8_t deviceAddress[])
+{
+  char temp;
+  temp = sensors.getHighAlarmTemp(deviceAddress);
+  Serial.print("High Alarm: ");
+  Serial.print(temp, DEC);
+  Serial.print("C, ");
+  temp = sensors.getLowAlarmTemp(deviceAddress);
+  Serial.print("Low Alarm: ");
+  Serial.print(temp, DEC);
+  Serial.print("C");
+}
+
+// main function to print information about a device
+void printData(DeviceAddress deviceAddress)
+{
+  //Serial.print("Device Address: ");
+  //printAddress(deviceAddress);
+  Serial.print(" ");
+  printTemperature(deviceAddress);
+}
+
+void checkAlarm(DeviceAddress deviceAddress)
+{
+  if (sensors.hasAlarm(deviceAddress))
+  {
+    Serial.print("ALARM: ");
+    printData(deviceAddress);
+    digitalWrite(ledPin, HIGH);   // sets the LED on
+    delay(1000);                  // waits for a seconds
+  }
+}
+void sendTemp()
+{
+  float tempC0 = sensors.getTempC(insideThermometer);
+  float tempC1 = sensors.getTempC(outsideThermometer);
+  
+  if (oldTemp0 != tempC0 || oldTemp1 != tempC1) { 
+  Serial.println("Start Sending to database...");
+  sprintf(pageAdd,"/shop_temperature/arduino.php?temp1=%s&temp2=%s",tempBuffer1,tempBuffer2);
+  Serial.print("-->Inside Temperature: ");
+  Serial.println(tempBuffer1);
+  Serial.print("-->Outside Temperature: ");
+  Serial.println(tempBuffer2);
+  delay(1000);
+  if(!getPage(server,pageAdd));
+  }
+  oldTemp0 = tempC0;
+  oldTemp1 = tempC1;
+}
+
+void lcdPrint(void)
+{
+  float tempC0 = sensors.getTempC(insideThermometer);
+  float tempC1 = sensors.getTempC(outsideThermometer);
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Temp In: ");
+  lcd.print(tempC0);
+  lcd.setCursor(0,1);
+  lcd.print("Temp Out: ");
+  lcd.print(tempC1);
+}
+
+/*-----------------------------------------void loop-----------------------------------------------------------------------*/
+void loop(void)
+{ 
+  digitalWrite(ledPin, LOW);   // sets the LED on
+  
+  // request to all devices on the bus
+  Serial.print("Requesting temperatures...");
+  sensors.requestTemperatures();
+  Serial.println("DONE");
+  
+  // check each address individually for an alarm condition
+  checkAlarm(insideThermometer);
+  checkAlarm(outsideThermometer);
+  
+  // print the device information
+  printData(insideThermometer);
+  printData(outsideThermometer);
+  
+  delay(1000);
+  
+  sendTemp();
+
+  lcdPrint();
+  
+
+
+// if(!getPage(server,pageAdd));
+  }
+
+/*-----------------------------------------end void loop-----------------------------------------------------------------------*/
+
+
+  
+byte getPage(IPAddress ipBuf,char *page)
+{
+  int inChar;
+  char outBuf[128];
+
+
+  Serial.print("connecting...");
+
+  if(client.connect(ipBuf,80))
+  {
+    Serial.println("connected");
+
+    sprintf(outBuf,"GET %s HTTP/1.1\r\nHost: www.yourdomain.com\r\n\r\n",page);
+    client.write(outBuf);
+    Serial.println("Temperatures saved succesfull in your database!!!");
+    delay(5000);
+  } 
+  else
+  {
+    Serial.println("failed");
+  }
+  
+  while(client.connected())
+  {
+    while(client.available())
+    {
+      inChar = client.read();
+      //Serial.write(inChar);
+    }
+
+    delay(10);
+ 
+  }
+  
+  Serial.println("disconnecting.");
+
+  Serial.println();
+  client.stop();
+  Serial.println("<------------------------------------------------->");
+  Serial.print("Wait 5sec ");
+  for(int x=5;x>0;x--){
+  delay(1000);
+
+  Serial.print( x);
+  
+  
+  }
+  Serial.println();
+  Serial.println("<------------------------------------------------->");
+  Serial.println();
+}
