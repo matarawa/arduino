@@ -45,14 +45,9 @@
         // Message with a good checksum received, dump it.
         driver.printBuffer("Got:", buf, buflen);
         memcpy(&myData, buf, sizeof(myData));
-        Serial.println("");
-       
-        Serial.print("Humidity: ");
-        Serial.print(myData.humidity);
-       
-        Serial.print("  Temperature: ");
         Serial.print(myData.temp);
-
-        Serial.println("");
+        Serial.print(",");
+        Serial.print(myData.humidity);
+        Serial.print('\n');
       }
     }
