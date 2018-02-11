@@ -43,7 +43,8 @@
         int i;
 
         // Message with a good checksum received, dump it.
-        driver.printBuffer("Got:", buf, buflen);
+        // driver.printBuffer("Got:", buf, buflen);
+          
         memcpy(&myData, buf, sizeof(myData));
         Serial.print(myData.temp);
         Serial.print(",");
