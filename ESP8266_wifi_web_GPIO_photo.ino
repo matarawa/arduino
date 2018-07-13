@@ -1,12 +1,14 @@
 /* Create a WiFi access point and provide a web server on it.
 ** For more details see http://42bots.com.
+**
+** Last modified: 14 July 2018 by cheshoare
+**
 */
 
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 
-IPAddress    apIP(42, 42, 42, 42);  // Defining a static IP address: local & gateway
-                                    // Default IP in AP mode is 192.168.4.1
+IPAddress    apIP(192, 168, 1, 14);  // Defining a static IP address: local & gateway
 
 /* This are the WiFi access point settings. Update them to your likin */
 const char *ssid = "ESP8266";
