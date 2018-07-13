@@ -17,6 +17,7 @@
                   http://arduino.cc/en/Reference/Ethernet
 
   Date:         7 January 2013
+  Modified:     14 July 2018 by cheshoare
  
   Author:       W.A. Smith, http://startingelectronics.org
 --------------------------------------------------------------*/
@@ -26,7 +27,7 @@
 
 // MAC address from Ethernet shield sticker under board
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-IPAddress ip(192, 168, 0, 10); // IP address, may need to change depending on network
+IPAddress ip(192, 168, 1, 10); // IP address, may need to change depending on network
 EthernetServer server(80);  // create a server at port 80
 
 void setup()
