@@ -7,12 +7,12 @@
   Hardware:     Arduino Uno and official Arduino Ethernet
                 shield. Should work with other Arduinos and
                 compatible Ethernet shields.
-                2Gb micro SD card formatted FAT16
+                2GB micro SD card formatted FAT16
                 
   Software:     Developed using Arduino 1.0.5 software
                 Should be compatible with Arduino 1.0 +
                 
-                Requires index.htm, evelyn.htm and pic.jpg to be
+                Requires index.htm, page2.htm and pic.jpg to be
                 on the micro SD card in the Ethernet shield
                 micro SD card socket.
   
@@ -26,7 +26,7 @@
                   http://arduino.cc/en/Reference/SD
 
   Date:         7 March 2013
-  Modified:     17 June 2013
+  Modified:     14 July 2018 by cheshoare
  
   Author:       W.A. Smith, http://startingelectronics.org
 --------------------------------------------------------------*/
@@ -38,13 +38,13 @@
 // size of buffer used to capture HTTP requests
 #define REQ_BUF_SZ   20
 
-// MAC address from Ethernet shield sticker under board
+// MAC address from Ethernet shield sticker - may be under board
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-IPAddress ip(192, 168, 1, 10); // IP address, may need to change depending on network
-EthernetServer server(443);  // create a server at port 443
-File webFile;
-char HTTP_req[REQ_BUF_SZ] = {0}; // buffered HTTP request stored as null terminated string
-char req_index = 0;              // index into HTTP_req buffer
+IPAddress ip(192, 168, 1, 10);    // IP address, may need to change depending on network
+EthernetServer server(80);        // create a server at port 80
+File webFile;                     // handle to files on SD card
+char HTTP_req[REQ_BUF_SZ] = {0};  // buffered HTTP request stored as null terminated string
+char req_index = 0;               // index into HTTP_req buffer
 
 void setup()
 {
@@ -101,12 +101,12 @@ void loop()
                         client.println();
                         webFile = SD.open("index.htm");        // open web page file
                     }
-                    else if (StrContains(HTTP_req, "GET /evelyn.htm")) {
+                    else if (StrContains(HTTP_req, "GET /page2.htm")) {
                         client.println("HTTP/1.1 200 OK");
                         client.println("Content-Type: text/html");
                         client.println("Connnection: close");
                         client.println();
-                        webFile = SD.open("evelyn.htm");        // open web page file
+                        webFile = SD.open("page2.htm");        // open web page file
                     }
                     else if (StrContains(HTTP_req, "GET /pic.jpg")) {
                         webFile = SD.open("pic.jpg");
