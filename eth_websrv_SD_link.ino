@@ -28,7 +28,7 @@
                   http://arduino.cc/en/Reference/SD
 
   Date:         2 March 2013
-  Modified:     14 June 2013
+  Modified:     14 July 2018 by cheshoare
                 - removed use of String class, used too much SRAM
                 - added StrClear() and StrContains() functions
                 - disable Ethernet chip at startup
@@ -133,7 +133,7 @@ void loop()
                 }
             } // end if (client.available())
         } // end while (client.connected())
-        delay(1);      // give the web browser time to receive the data
+        delay(1000);      // give the web browser time to receive the data
         client.stop(); // close the connection
     } // end if (client)
 }
