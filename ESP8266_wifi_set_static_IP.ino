@@ -18,8 +18,8 @@
 
 #include <ESP8266WiFi.h>
 
-const char* ssid = "SPARK-B315-532E";
-const char* password = "YGF8Y070BE0";
+const char* ssid = "your SSID here";
+const char* password = "your PASSWORD here";
 
 IPAddress staticIP(192,168,1,14);
 IPAddress gateway(192,168,1,254);
