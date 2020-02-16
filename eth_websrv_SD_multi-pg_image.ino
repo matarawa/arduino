@@ -117,6 +117,12 @@ void loop()
                     else if (StrContains(HTTP_req, "GET /page4.htm")) {
                         webFile = SD.open("page4.htm");        // open web page file
                     }
+                    else if (StrContains(HTTP_req, "GET /page5.htm")) {
+                        webFile = SD.open("page5.htm");        // open web page file
+                    }
+                    else if (StrContains(HTTP_req, "GET /page6.htm")) {
+                        webFile = SD.open("page6.htm");        // open web page file
+                    }
                     else if (StrContains(HTTP_req, "GET /pic.jpg")) {
                         webFile = SD.open("pic.jpg");         // open image file
                     }
